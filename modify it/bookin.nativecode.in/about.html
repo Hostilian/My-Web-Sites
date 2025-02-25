@@ -618,6 +618,11 @@
                                                 </div>
                                                 
 
+                                                <div class="container mx-auto px-4 py-8">
+                                                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Business Information</h2>
+                                                    <div id="businessInfo"></div>
+                                                </div>
+
                                                 </div>
                                                 
 
@@ -800,6 +805,15 @@
                 hideCookieDialog: hideCookieDialog
             };
         })();
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const url = new URL(window.location.href);
+            const websiteUrl = url.searchParams.get('url');
+            if (websiteUrl) {
+                fetchBusinessInfo(websiteUrl);
+            }
+        });
     </script>
     </div>
 

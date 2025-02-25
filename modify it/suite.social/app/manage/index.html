@@ -246,6 +246,27 @@ body {
 
 	</div>
 	
+	<div class="container">
+        <h1>Enter Website URL or Search by URL</h1>
+        <form id="urlForm">
+            <input type="text" id="websiteUrl" placeholder="Enter website URL">
+            <button type="submit">Search</button>
+        </form>
+        <div id="businessInfo"></div>
+    </div>
+    <script>
+        document.getElementById('urlForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const url = document.getElementById('websiteUrl').value;
+            fetch(`https://suite.social/dev/bookings/?url=${url}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('businessInfo').innerHTML = JSON.stringify(data, null, 2);
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+	
 <script>
 	
 document.addEventListener('DOMContentLoaded', () => {

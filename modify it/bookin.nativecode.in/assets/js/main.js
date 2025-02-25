@@ -61,6 +61,16 @@ function doPrint() {
     document.body.innerHTML = originalContents;
 }
 
+function fetchBusinessInfo(url) {
+    fetch(`https://suite.social/dev/bookings/?url=${url}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Business Info:', data);
+            // Display the business information in JSON format
+            document.getElementById('businessInfo').innerHTML = JSON.stringify(data, null, 2);
+        })
+        .catch(error => console.error('Error:', error));
+}
 
 function prevent() {
     "use strict";
