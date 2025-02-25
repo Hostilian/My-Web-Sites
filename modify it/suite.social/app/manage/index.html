@@ -289,7 +289,136 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </script>
 
-</body>
+<div class="search-section">
+  <form id="urlForm">
+    <input type="text" id="websiteUrl" placeholder="Enter website URL" class="form-control">
+    <button type="submit" class="btn btn-primary">Search Business</button>
+  </form>
+  <div id="progress" class="hidden">
+    <div class="progress-bar"></div>
+    <p>Analyzing website...</p>
+  </div>
+  <div id="results" class="hidden">
+    <div class="meta-info">
+      <img id="site-image" src="" alt="Website Preview">
+      <h3 id="site-title"></h3>
+      <p id="site-description"></p>
+      <div id="site-keywords"></div>
+    </div>
+    <div class="business-info">
+      <img id="business-logo" src="" alt="Business Logo">
+      <h2 id="business-name"></h2>
+      <div id="business-photos"></div>
+      <p id="business-address"></p>
+      <p id="business-description"></p>
+      <p id="business-category"></p>
+      <div id="business-reviews"></div>
+      <p id="leads-count"></p>
+    </div>
+    <button id="claim-business" class="btn btn-success">Claim Business</button>
+  </div>
+</div>
+<script>
+document.getElementById('urlForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const url = document.getElementById('websiteUrl').value;
+    const resultsDiv = document.getElementById('results');
+    const progressDiv = document.getElementById('progress');
+    const businessInfoDiv = document.querySelector('.business-info');
+    const metaInfoDiv = document.querySelector('.meta-info');
 
-<!-- Mirrored from suite.social/app/manage/index.htm by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 25 Feb 2025 16:30:40 GMT -->
+    // Show progress
+    progressDiv.classList.remove('hidden');
+    resultsDiv.classList.add('hidden');
+
+    // Fetch data from Google Places API
+    fetch(`https://suite.social/dev/bookings/?url=${encodeURIComponent(url)}`)
+        .then(response => response.json())
+        .then(data => {
+            // Hide progress, show results
+            progressDiv.classList.add('hidden');
+            resultsDiv.classList.remove('hidden');
+
+            // Meta Info
+            document.getElementById('site-image').src = data.meta_image || '';
+            document.getElementById('site-title').textContent = data.meta_title || '';
+            document.getElementById('site-description').textContent = data.meta_description || '';
+            document.getElementById('site-keywords').textContent = 'Keywords: ' + (data.meta_keywords || '');
+
+            // Business Info
+            document.getElementById('business-logo').src = data.icon || `https://www.google.com/s2/favicons?domain=${url}`;
+            document.getElementById('business-name').textContent = data.name || '';
+            document.getElementById('business-address').textContent = data.formatted_address || '';
+            document.getElementById('business-description').textContent = data.editorial_summary || data.meta_description || '';
+            document.getElementById('business-category').textContent = 'Categories: ' + (data.types ? data.types.join(', ') : '');
+
+            // Business Photos (limited to 5)
+            const photosDiv = document.getElementById('business-photos');
+            photosDiv.innerHTML = ''; // Clear existing photos
+            if (data.photos && data.photos.length > 0) {
+                for (let i = 0; i < Math.min(5, data.photos.length); i++) {
+                    const photoRef = data.photos[i].photo_reference;
+                    const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoRef}&key=YOUR_API_KEY`; // Replace YOUR_API_KEY
+                    const img = document.createElement('img');
+                    img.src = photoUrl;
+                    img.alt = 'Business Photo';
+                    photosDiv.appendChild(img);
+                }
+            }
+
+            // Leads Count (Placeholder - replace with actual lead count)
+            // Fetch leads count (replace with actual lead count)
+            const keywords = data.meta_keywords || (data.types ? data.types.join(', ') : '');
+            fetch(`https://suite.social/dev/leads/?keywords=${encodeURIComponent(keywords)}`)
+                .then(response => response.json())
+                .then(leadsData => {
+                    document.getElementById('leads-count').textContent = `${leadsData.count} leads for the business`;
+                })
+                .catch(error => {
+                    console.error('Error fetching leads:', error);
+                    document.getElementById('leads-count').textContent = 'Error fetching leads';
+                });
+
+            // Claim Business Button
+            document.getElementById('claim-business').addEventListener('click', function() {
+                // Implement login/registration and claim process here
+                // Show a simple login/register form
+                const claimBusinessDiv = document.createElement('div');
+                claimBusinessDiv.innerHTML = `
+                    <h3>Claim Business</h3>
+                    <form id="claimForm">
+                        <input type="email" id="claimEmail" placeholder="Enter your email">
+                        <button type="submit">Claim</button>
+                    </form>
+                    <div id="claimMessage"></div>
+                `;
+                businessInfoDiv.appendChild(claimBusinessDiv);
+
+                document.getElementById('claimForm').addEventListener('submit', function(claimEvent) {
+                    claimEvent.preventDefault();
+                    const claimEmail = document.getElementById('claimEmail').value;
+                    const domain = url.replace('www.', '').split('/')[0];
+                    const emailDomain = claimEmail.split('@')[1];
+
+                    if (emailDomain === domain) {
+                        // Simulate sending a verification email
+                        document.getElementById('claimMessage').textContent = 'Verification email sent. Please check your inbox.';
+                        // In a real implementation, you would send an email to the provided address
+                        // with a link to verify the claim.
+                    } else {
+                        document.getElementById('claimMessage').textContent = 'Email domain does not match the website domain.';
+                    }
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            progressDiv.classList.add('hidden');
+            resultsDiv.classList.add('hidden');
+            businessInfoDiv.innerHTML = '<p>Error fetching business information.</p>';
+            metaInfoDiv.innerHTML = '';
+        });
+});
+</script>
+</body>
 </html>
